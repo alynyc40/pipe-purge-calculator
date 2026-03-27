@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipe Purge Time Calculator</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --muted:#94a3b8;
+      --text:#f8fafc;
+      --accent:#22c55e;
+      --border:#334155;
+      --soft:#1e293b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#0b1120,#111827);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .wrap{width:100%;max-width:740px}
+    .card{
+      background:rgba(17,24,39,.96);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .head{
+      padding:22px 20px 16px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(34,197,94,.10),transparent);
+    }
+    h1{margin:0 0 6px;font-size:1.55rem}
+    .sub{margin:0;color:var(--muted);line-height:1.45}
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      padding:18px;
+    }
+    .field{
+      background:var(--soft);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+    }
+    .field.full{grid-column:1 / -1}
+    label{
+      display:block;
+      font-size:.95rem;
+      margin-bottom:8px;
+      color:#e2e8f0;
+      font-weight:700;
+    }
+    input, select, button{
+      width:100%;
+      border-radius:12px;
+      border:1px solid #475569;
+      background:#0f172a;
+      color:var(--text);
+      padding:14px 12px;
+      font-size:1rem;
+    }
+    input:focus, select:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(34,197,94,.18);
+    }
+    .result{
+      margin:0 18px 18px;
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(180deg,rgba(34,197,94,.12),rgba(34,197,94,.05));
+      border:1px solid rgba(34,197,94,.35);
+    }
+    .big{
+      font-size:2rem;
+      font-weight:800;
+      margin:6px 0 10px;
+    }
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+    .kpi{
+      background:rgba(15,23,42,.85);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+    }
+    .kpi small{display:block;color:var(--muted);margin-bottom:6px}
+    .kpi strong{font-size:1.05rem}
+    .footer{
+      padding:0 18px 20px;
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.45;
+    }
+    .pillrow{
+      display:flex;gap:8px;flex-wrap:wrap;margin-top:10px
+    }
+    .pill{
+      background:#0f172a;border:1px solid var(--border);color:#cbd5e1;
+      padding:8px 10px;border-radius:999px;font-size:.88rem
+    }
+    @media (max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr}
+      .big{font-size:1.7rem}
+      h1{font-size:1.3rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <h1>Pipe Purge Time Calculator</h1>
+        <p class="sub">Fast mobile calculator for welders. Enter pipe size, length, flow, and purge factor. Result updates instantly.</p>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="diameter">Internal pipe diameter</label>
+          <input id="diameter" type="number" min="0" step="any" value="52.5" />
+        </div>
+
+        <div class="field">
+          <label for="diameterUnit">Diameter unit</label>
+          <select id="diameterUnit">
+            <option value="mm" selected>mm</option>
+            <option value="in">inch</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="length">Pipe length to purge</label>
+          <input id="length" type="number" min="0" step="any" value="500" />
+        </div>
+
+        <div class="field">
+          <label for="lengthUnit">Length unit</label>
+          <select id="lengthUnit">
+            <option value="mm" selected>mm</option>
+            <option value="m">meter</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="flow">Purge gas flow rate</label>
+          <input id="flow" type="number" min="0" step="any" value="8" />
+        </div>
+
+        <div class="field">
+          <label for="flowUnit">Flow unit</label>
+          <select id="flowUnit">
+            <option value="lpm" selected>L/min</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="factor">Volume changes</label>
+          <select id="factor">
+            <option value="4">4 x volume</option>
+            <option value="5" selected>5 x volume</option>
+            <option value="6">6 x volume</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="gas">Purge gas</label>
+          <select id="gas">
+            <option>Argon</option>
+            <option>Nitrogen</option>
+            <option>Other inert gas</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="notes">Optional note</label>
+          <input id="notes" type="text" placeholder="Example: Sch 10 SS spool / root purge" />
+        </div>
+      </div>
+
+      <div class="result">
+        <div>Recommended purge time</div>
+        <div class="big" id="purgeTime">--</div>
+        <div id="readyText">Fill in the values to calculate.</div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <small>Pipe volume</small>
+            <strong id="volumeLiters">--</strong>
+          </div>
+          <div class="kpi">
+            <small>Total gas needed</small>
+            <strong id="gasNeeded">--</strong>
+          </div>
+          <div class="kpi">
+            <small>Purge factor</small>
+            <strong id="factorOut">--</strong>
+          </div>
+        </div>
+
+        <div class="pillrow">
+          <div class="pill" id="summary1">—</div>
+          <div class="pill" id="summary2">—</div>
+          <div class="pill" id="summary3">—</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Formula used: pipe volume = π × (diameter² / 4) × length. Purge time = (pipe volume × volume changes) ÷ flow rate.
+        Always follow your WPS, internal procedure, oxygen limits, and site rules.
+      </div>
+    </div>
+  </div>
+
+<script>
+  const ids = ["diameter","diameterUnit","length","lengthUnit","flow","factor","gas","notes"];
+  ids.forEach(id => document.getElementById(id).addEventListener("input", calc));
+
+  function toMm(value, unit){
+    if(unit === "in") return value * 25.4;
+    return value;
+  }
+  function toMmLength(value, unit){
+    if(unit === "m") return value * 1000;
+    return value;
+  }
+  function formatMinutes(totalMinutes){
+    if (!isFinite(totalMinutes) || totalMinutes <= 0) return "--";
+    const totalSeconds = Math.round(totalMinutes * 60);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    if (mins === 0) return `${secs} sec`;
+    return `${mins} min ${secs.toString().padStart(2,"0")} sec`;
+  }
+  function fmt(value, decimals=2){
+    if (!isFinite(value)) return "--";
+    return Number(value).toFixed(decimals);
+  }
+
+  function calc(){
+    const d = parseFloat(document.getElementById("diameter").value);
+    const du = document.getElementById("diameterUnit").value;
+    const l = parseFloat(document.getElementById("length").value);
+    const lu = document.getElementById("lengthUnit").value;
+    const flow = parseFloat(document.getElementById("flow").value);
+    const factor = parseFloat(document.getElementById("factor").value);
+    const gas = document.getElementById("gas").value;
+
+    if(!(d > 0 && l > 0 && flow > 0 && factor > 0)){
+      document.getElementById("purgeTime").textContent = "--";
+      document.getElementById("readyText").textContent = "Enter positive values to calculate.";
+      document.getElementById("volumeLiters").textContent = "--";
+      document.getElementById("gasNeeded").textContent = "--";
+      document.getElementById("factorOut").textContent = "--";
+      document.getElementById("summary1").textContent = "Check values";
+      document.getElementById("summary2").textContent = "Flow must be > 0";
+      document.getElementById("summary3").textContent = "Length must be > 0";
+      return;
+    }
+
+    const dMm = toMm(d, du);
+    const lMm = toMmLength(l, lu);
+
+    const radiusMm = dMm / 2;
+    const volumeMm3 = Math.PI * radiusMm * radiusMm * lMm;
+    const volumeLiters = volumeMm3 / 1000000; // 1 liter = 1e6 mm3
+    const gasNeeded = volumeLiters * factor;
+    const purgeMinutes = gasNeeded / flow;
+
+    document.getElementById("purgeTime").textContent = formatMinutes(purgeMinutes);
+    document.getElementById("readyText").textContent = `${gas} purge at ${fmt(flow,1)} L/min. Start weld only when your purge quality/oxygen spec is achieved.`;
+    document.getElementById("volumeLiters").textContent = `${fmt(volumeLiters,2)} L`;
+    document.getElementById("gasNeeded").textContent = `${fmt(gasNeeded,2)} L`;
+    document.getElementById("factorOut").textContent = `${factor} x volume`;
+    document.getElementById("summary1").textContent = `ID ${fmt(d,1)} ${du}`;
+    document.getElementById("summary2").textContent = `Length ${fmt(l,1)} ${lu}`;
+    document.getElementById("summary3").textContent = `Flow ${fmt(flow,1)} L/min`;
+  }
+
+  calc();
+</script>
+</body>
+</html>
