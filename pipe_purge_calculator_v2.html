@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipe Purge Time Calculator</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --muted:#94a3b8;
+      --text:#f8fafc;
+      --accent:#22c55e;
+      --border:#334155;
+      --soft:#1e293b;
+      --soft2:#0f172a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#0b1120,#111827);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .wrap{width:100%;max-width:780px}
+    .card{
+      background:rgba(17,24,39,.96);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .head{
+      padding:22px 20px 16px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(34,197,94,.10),transparent);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    h1{margin:0 0 6px;font-size:1.55rem}
+    .sub{margin:0;color:var(--muted);line-height:1.45}
+    .lang-switch{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .lang-btn{
+      width:auto;
+      min-width:74px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--soft2);
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+    }
+    .lang-btn.active{
+      border-color:var(--accent);
+      box-shadow:0 0 0 2px rgba(34,197,94,.18) inset;
+      background:rgba(34,197,94,.12);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      padding:18px;
+    }
+    .field{
+      background:var(--soft);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+    }
+    .field.full{grid-column:1 / -1}
+    label{
+      display:block;
+      font-size:.95rem;
+      margin-bottom:8px;
+      color:#e2e8f0;
+      font-weight:700;
+    }
+    input, select, button{
+      width:100%;
+      border-radius:12px;
+      border:1px solid #475569;
+      background:#0f172a;
+      color:var(--text);
+      padding:14px 12px;
+      font-size:1rem;
+    }
+    input:focus, select:focus, button:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(34,197,94,.18);
+    }
+    .hint{margin-top:8px;color:var(--muted);font-size:.88rem;line-height:1.4}
+    .result{
+      margin:0 18px 18px;
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(180deg,rgba(34,197,94,.12),rgba(34,197,94,.05));
+      border:1px solid rgba(34,197,94,.35);
+    }
+    .big{
+      font-size:2rem;
+      font-weight:800;
+      margin:6px 0 10px;
+    }
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+    .kpi{
+      background:rgba(15,23,42,.85);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+    }
+    .kpi small{display:block;color:var(--muted);margin-bottom:6px}
+    .kpi strong{font-size:1.05rem}
+    .footer{
+      padding:0 18px 20px;
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.45;
+    }
+    .pillrow{
+      display:flex;gap:8px;flex-wrap:wrap;margin-top:10px
+    }
+    .pill{
+      background:#0f172a;border:1px solid var(--border);color:#cbd5e1;
+      padding:8px 10px;border-radius:999px;font-size:.88rem
+    }
+    @media (max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr}
+      .big{font-size:1.7rem}
+      h1{font-size:1.3rem}
+      .topbar{align-items:stretch}
+      .lang-switch{width:100%}
+      .lang-btn{flex:1}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="topbar">
+          <div>
+            <h1 id="title">Pipe Purge Time Calculator</h1>
+            <p class="sub" id="subtitle">Fast mobile calculator for welders. Use mm for diameter and length, and L/min for flow.</p>
+          </div>
+          <div class="lang-switch" aria-label="Language selector">
+            <button class="lang-btn active" data-lang="en" type="button">English</button>
+            <button class="lang-btn" data-lang="ru" type="button">Русский</button>
+            <button class="lang-btn" data-lang="pl" type="button">Polski</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="diameter" id="diameterLabel">Internal pipe diameter</label>
+          <input id="diameter" type="number" min="0" step="any" value="52.5" />
+          <div class="hint" id="diameterHint">Enter diameter in mm</div>
+        </div>
+
+        <div class="field">
+          <label for="length" id="lengthLabel">Pipe length to purge</label>
+          <input id="length" type="number" min="0" step="any" value="500" />
+          <div class="hint" id="lengthHint">Enter length in mm</div>
+        </div>
+
+        <div class="field">
+          <label for="flow" id="flowLabel">Purge gas flow rate</label>
+          <input id="flow" type="number" min="0" step="any" value="8" />
+          <div class="hint" id="flowHint">Enter flow in L/min</div>
+        </div>
+
+        <div class="field">
+          <label for="factor" id="factorLabel">Volume changes</label>
+          <select id="factor">
+            <option value="4">4 x volume</option>
+            <option value="5" selected>5 x volume</option>
+            <option value="6">6 x volume</option>
+          </select>
+          <div class="hint" id="factorHint">Typical quick setting: 5 x volume</div>
+        </div>
+
+        <div class="field full">
+          <label for="gas" id="gasLabel">Purge gas</label>
+          <select id="gas">
+            <option value="Argon" selected>Argon</option>
+            <option value="Forming gas 90/10">Forming gas 90/10</option>
+          </select>
+          <div class="hint" id="gasHint">Calculated for Argon or Forming gas 90/10</div>
+        </div>
+      </div>
+
+      <div class="result">
+        <div id="resultLabel">Recommended purge time</div>
+        <div class="big" id="purgeTime">--</div>
+        <div id="readyText">Fill in the values to calculate.</div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <small id="volumeLabel">Pipe volume</small>
+            <strong id="volumeLiters">--</strong>
+          </div>
+          <div class="kpi">
+            <small id="gasNeededLabel">Total gas needed</small>
+            <strong id="gasNeeded">--</strong>
+          </div>
+          <div class="kpi">
+            <small id="factorOutLabel">Purge factor</small>
+            <strong id="factorOut">--</strong>
+          </div>
+        </div>
+
+        <div class="pillrow">
+          <div class="pill" id="summary1">—</div>
+          <div class="pill" id="summary2">—</div>
+          <div class="pill" id="summary3">—</div>
+        </div>
+      </div>
+
+      <div class="footer" id="footerText">
+        Formula used: pipe volume = π × (diameter² / 4) × length. Purge time = (pipe volume × volume changes) ÷ flow rate.
+        Use mm for diameter and length, and L/min for flow. Always follow your WPS, internal procedure, oxygen limits, and site rules.
+      </div>
+    </div>
+  </div>
+
+<script>
+  const texts = {
+    en: {
+      title: "Pipe Purge Time Calculator",
+      subtitle: "Fast mobile calculator for welders. Use mm for diameter and length, and L/min for flow.",
+      diameterLabel: "Internal pipe diameter",
+      diameterHint: "Enter diameter in mm",
+      lengthLabel: "Pipe length to purge",
+      lengthHint: "Enter length in mm",
+      flowLabel: "Purge gas flow rate",
+      flowHint: "Enter flow in L/min",
+      factorLabel: "Volume changes",
+      factorHint: "Typical quick setting: 5 x volume",
+      gasLabel: "Purge gas",
+      gasHint: "Calculated for Argon or Forming gas 90/10",
+      resultLabel: "Recommended purge time",
+      resultReady: (gas, flow) => `${gas} purge at ${flow} L/min. Start welding only when your purge quality and oxygen level are acceptable.`,
+      resultFill: "Fill in the values to calculate.",
+      resultError: "Enter positive values to calculate.",
+      volumeLabel: "Pipe volume",
+      gasNeededLabel: "Total gas needed",
+      factorOutLabel: "Purge factor",
+      footerText: "Formula used: pipe volume = π × (diameter² / 4) × length. Purge time = (pipe volume × volume changes) ÷ flow rate. Use mm for diameter and length, and L/min for flow. Always follow your WPS, internal procedure, oxygen limits, and site rules.",
+      summary1: d => `ID ${d} mm`,
+      summary2: l => `Length ${l} mm`,
+      summary3: f => `Flow ${f} L/min`,
+      bad1: "Check values",
+      bad2: "Flow must be > 0",
+      bad3: "Length must be > 0",
+      liters: "L",
+      factorFmt: f => `${f} x volume`,
+      factorOptions: ["4 x volume", "5 x volume", "6 x volume"],
+      gases: ["Argon", "Forming gas 90/10"],
+      langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+    },
+    ru: {
+      title: "Калькулятор времени продувки трубы",
+      subtitle: "Быстрый мобильный калькулятор для сварщиков. Диаметр и длина в мм, расход в л/мин.",
+      diameterLabel: "Внутренний диаметр трубы",
+      diameterHint: "Введите диаметр в мм",
+      lengthLabel: "Длина трубы для продувки",
+      lengthHint: "Введите длину в мм",
+      flowLabel: "Расход газа для продувки",
+      flowHint: "Введите расход в л/мин",
+      factorLabel: "Количество смен объема",
+      factorHint: "Обычно быстрое значение: 5 x объем",
+      gasLabel: "Газ для продувки",
+      gasHint: "Расчет для аргона или форминг-газа 90/10",
+      resultLabel: "Рекомендуемое время продувки",
+      resultReady: (gas, flow) => `${gas}, расход ${flow} л/мин. Начинайте сварку только при достижении нужного качества продувки и уровня кислорода.`,
+      resultFill: "Введите значения для расчета.",
+      resultError: "Введите положительные значения.",
+      volumeLabel: "Объем трубы",
+      gasNeededLabel: "Общий расход газа",
+      factorOutLabel: "Коэффициент продувки",
+      footerText: "Используемая формула: объем трубы = π × (диаметр² / 4) × длина. Время продувки = (объем трубы × количество смен объема) ÷ расход. Используйте мм для диаметра и длины, и л/мин для расхода. Всегда следуйте WPS, внутренней процедуре, лимитам кислорода и правилам площадки.",
+      summary1: d => `ID ${d} мм`,
+      summary2: l => `Длина ${l} мм`,
+      summary3: f => `Расход ${f} л/мин`,
+      bad1: "Проверьте значения",
+      bad2: "Расход должен быть > 0",
+      bad3: "Длина должна быть > 0",
+      liters: "л",
+      factorFmt: f => `${f} x объем`,
+      factorOptions: ["4 x объем", "5 x объем", "6 x объем"],
+      gases: ["Аргон", "Форминг-газ 90/10"],
+      langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+    },
+    pl: {
+      title: "Kalkulator czasu przedmuchu rury",
+      subtitle: "Szybki kalkulator mobilny dla spawaczy. Średnica i długość w mm, przepływ w l/min.",
+      diameterLabel: "Średnica wewnętrzna rury",
+      diameterHint: "Wpisz średnicę w mm",
+      lengthLabel: "Długość rury do przedmuchu",
+      lengthHint: "Wpisz długość w mm",
+      flowLabel: "Przepływ gazu do przedmuchu",
+      flowHint: "Wpisz przepływ w l/min",
+      factorLabel: "Liczba wymian objętości",
+      factorHint: "Typowe szybkie ustawienie: 5 x objętość",
+      gasLabel: "Gaz do przedmuchu",
+      gasHint: "Obliczenia dla argonu lub gazu formującego 90/10",
+      resultLabel: "Zalecany czas przedmuchu",
+      resultReady: (gas, flow) => `${gas}, przepływ ${flow} l/min. Zacznij spawanie dopiero po osiągnięciu właściwej jakości przedmuchu i poziomu tlenu.`,
+      resultFill: "Wpisz wartości do obliczenia.",
+      resultError: "Wpisz wartości dodatnie.",
+      volumeLabel: "Objętość rury",
+      gasNeededLabel: "Łączna ilość gazu",
+      factorOutLabel: "Współczynnik przedmuchu",
+      footerText: "Użyty wzór: objętość rury = π × (średnica² / 4) × długość. Czas przedmuchu = (objętość rury × liczba wymian objętości) ÷ przepływ. Używaj mm dla średnicy i długości oraz l/min dla przepływu. Zawsze stosuj się do WPS, procedur wewnętrznych, limitów tlenu i zasad zakładu.",
+      summary1: d => `ID ${d} mm`,
+      summary2: l => `Długość ${l} mm`,
+      summary3: f => `Przepływ ${f} l/min`,
+      bad1: "Sprawdź wartości",
+      bad2: "Przepływ musi być > 0",
+      bad3: "Długość musi być > 0",
+      liters: "L",
+      factorFmt: f => `${f} x objętość`,
+      factorOptions: ["4 x objętość", "5 x objętość", "6 x objętość"],
+      gases: ["Argon", "Gaz formujący 90/10"],
+      langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+    }
+  };
+
+  let currentLang = 'en';
+
+  const ids = ["diameter","length","flow","factor","gas"];
+  ids.forEach(id => document.getElementById(id).addEventListener("input", calc));
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+  });
+
+  function formatMinutes(totalMinutes){
+    if (!isFinite(totalMinutes) || totalMinutes <= 0) return "--";
+    const totalSeconds = Math.round(totalMinutes * 60);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    if (mins === 0) return `${secs} sec`;
+    return `${mins} min ${secs.toString().padStart(2,"0")} sec`;
+  }
+  function fmt(value, decimals=2){
+    if (!isFinite(value)) return "--";
+    return Number(value).toFixed(decimals);
+  }
+
+  function applyLanguage(){
+    const t = texts[currentLang];
+    document.documentElement.lang = currentLang;
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('subtitle').textContent = t.subtitle;
+    document.getElementById('diameterLabel').textContent = t.diameterLabel;
+    document.getElementById('diameterHint').textContent = t.diameterHint;
+    document.getElementById('lengthLabel').textContent = t.lengthLabel;
+    document.getElementById('lengthHint').textContent = t.lengthHint;
+    document.getElementById('flowLabel').textContent = t.flowLabel;
+    document.getElementById('flowHint').textContent = t.flowHint;
+    document.getElementById('factorLabel').textContent = t.factorLabel;
+    document.getElementById('factorHint').textContent = t.factorHint;
+    document.getElementById('gasLabel').textContent = t.gasLabel;
+    document.getElementById('gasHint').textContent = t.gasHint;
+    document.getElementById('resultLabel').textContent = t.resultLabel;
+    document.getElementById('volumeLabel').textContent = t.volumeLabel;
+    document.getElementById('gasNeededLabel').textContent = t.gasNeededLabel;
+    document.getElementById('factorOutLabel').textContent = t.factorOutLabel;
+    document.getElementById('footerText').textContent = t.footerText;
+
+    const factor = document.getElementById('factor');
+    [...factor.options].forEach((opt, i) => opt.textContent = t.factorOptions[i]);
+
+    const gas = document.getElementById('gas');
+    const selectedValue = gas.value;
+    [...gas.options].forEach((opt, i) => {
+      opt.textContent = t.gases[i];
+    });
+    gas.value = selectedValue;
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+      btn.textContent = t.langButtons[btn.dataset.lang];
+    });
+  }
+
+  function setLanguage(lang){
+    currentLang = lang;
+    applyLanguage();
+    calc();
+  }
+
+  function getGasDisplay(value){
+    const t = texts[currentLang];
+    if (value === 'Argon') return t.gases[0];
+    return t.gases[1];
+  }
+
+  function calc(){
+    const t = texts[currentLang];
+    const d = parseFloat(document.getElementById("diameter").value);
+    const l = parseFloat(document.getElementById("length").value);
+    const flow = parseFloat(document.getElementById("flow").value);
+    const factor = parseFloat(document.getElementById("factor").value);
+    const gas = document.getElementById("gas").value;
+
+    if(!(d > 0 && l > 0 && flow > 0 && factor > 0)){
+      document.getElementById("purgeTime").textContent = "--";
+      document.getElementById("readyText").textContent = t.resultError;
+      document.getElementById("volumeLiters").textContent = "--";
+      document.getElementById("gasNeeded").textContent = "--";
+      document.getElementById("factorOut").textContent = "--";
+      document.getElementById("summary1").textContent = t.bad1;
+      document.getElementById("summary2").textContent = t.bad2;
+      document.getElementById("summary3").textContent = t.bad3;
+      return;
+    }
+
+    const radiusMm = d / 2;
+    const volumeMm3 = Math.PI * radiusMm * radiusMm * l;
+    const volumeLiters = volumeMm3 / 1000000;
+    const gasNeeded = volumeLiters * factor;
+    const purgeMinutes = gasNeeded / flow;
+    const gasDisplay = getGasDisplay(gas);
+
+    document.getElementById("purgeTime").textContent = formatMinutes(purgeMinutes);
+    document.getElementById("readyText").textContent = t.resultReady(gasDisplay, fmt(flow,1));
+    document.getElementById("volumeLiters").textContent = `${fmt(volumeLiters,2)} ${t.liters}`;
+    document.getElementById("gasNeeded").textContent = `${fmt(gasNeeded,2)} ${t.liters}`;
+    document.getElementById("factorOut").textContent = t.factorFmt(factor);
+    document.getElementById("summary1").textContent = t.summary1(fmt(d,1));
+    document.getElementById("summary2").textContent = t.summary2(fmt(l,1));
+    document.getElementById("summary3").textContent = t.summary3(fmt(flow,1));
+  }
+
+  applyLanguage();
+  calc();
+</script>
+</body>
+</html>
