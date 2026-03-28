@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarma Engineering Pipe Purge Calculator</title>
+  <style>
+    :root{
+      --bg1:#0b1120; --bg2:#111827; --card:#111827; --muted:#94a3b8; --text:#f8fafc;
+      --accent:#22c55e; --border:#334155; --soft:#1e293b; --soft2:#0f172a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Arial,Helvetica,sans-serif; color:var(--text);
+      background:linear-gradient(180deg,var(--bg1),var(--bg2)); min-height:100vh;
+      display:flex; align-items:center; justify-content:center; padding:16px;
+    }
+    .wrap{width:100%;max-width:820px}
+    .card{
+      background:rgba(17,24,39,.97); border:1px solid var(--border); border-radius:22px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35); overflow:hidden;
+    }
+    .head{
+      padding:18px 20px 14px; border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(34,197,94,.10),transparent);
+    }
+    .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo-box{background:#fff;border-radius:14px;padding:8px 10px;display:flex;align-items:center;justify-content:center}
+    .logo-box img{display:block;height:52px;width:auto}
+    h1{margin:0 0 6px;font-size:1.45rem}
+    .sub{margin:0;color:var(--muted);line-height:1.45}
+    .lang-switch{display:flex;gap:8px;flex-wrap:wrap}
+    .lang-btn{
+      width:auto; min-width:74px; padding:10px 12px; border-radius:999px; border:1px solid var(--border);
+      background:var(--soft2); color:var(--text); font-weight:700; cursor:pointer;
+    }
+    .lang-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,197,94,.18) inset;background:rgba(34,197,94,.12)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px}
+    .field{background:var(--soft);border:1px solid var(--border);border-radius:16px;padding:14px}
+    .field.full{grid-column:1 / -1}
+    label{display:block;font-size:.95rem;margin-bottom:8px;color:#e2e8f0;font-weight:700}
+    input, select{
+      width:100%; border-radius:12px; border:1px solid #475569; background:#0f172a; color:var(--text);
+      padding:14px 12px; font-size:1rem;
+    }
+    input:focus, select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+    .hint{margin-top:8px;color:var(--muted);font-size:.88rem;line-height:1.4}
+    .result{
+      margin:0 18px 18px; padding:18px; border-radius:18px;
+      background:linear-gradient(180deg,rgba(34,197,94,.12),rgba(34,197,94,.05));
+      border:1px solid rgba(34,197,94,.35);
+    }
+    .big{font-size:2rem;font-weight:800;margin:6px 0 10px}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+    .kpi{background:rgba(15,23,42,.85);border:1px solid var(--border);border-radius:14px;padding:12px}
+    .kpi small{display:block;color:var(--muted);margin-bottom:6px}
+    .kpi strong{font-size:1.05rem}
+    .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .pill{background:#0f172a;border:1px solid var(--border);color:#cbd5e1;padding:8px 10px;border-radius:999px;font-size:.88rem}
+    .footer{padding:0 18px 20px;color:var(--muted);font-size:.92rem;line-height:1.45}
+    .oxygen-box{margin:0 18px 18px;padding:16px;border-radius:18px;background:linear-gradient(180deg,rgba(59,130,246,.14),rgba(59,130,246,.06));border:1px solid rgba(59,130,246,.35)}
+    .oxygen-title{font-size:1rem;font-weight:800;margin:0 0 12px}
+    .oxygen-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .oxygen-item{border-radius:14px;padding:14px;border:1px solid var(--border);background:rgba(15,23,42,.85)}
+    .oxygen-item.ok{box-shadow:inset 0 0 0 1px rgba(34,197,94,.25)}
+    .oxygen-item.max{box-shadow:inset 0 0 0 1px rgba(250,204,21,.22)}
+    .oxygen-badge{display:inline-block;font-size:.84rem;font-weight:800;padding:6px 10px;border-radius:999px;margin-bottom:10px}
+    .oxygen-item.ok .oxygen-badge{background:rgba(34,197,94,.16);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+    .oxygen-item.max .oxygen-badge{background:rgba(250,204,21,.14);color:#fde68a;border:1px solid rgba(250,204,21,.28)}
+    .oxygen-value{font-size:1.4rem;font-weight:800;margin:2px 0 6px}
+    .oxygen-note{color:var(--muted);font-size:.9rem;line-height:1.35}
+    @media (max-width:700px){
+      .grid{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr 1fr}
+      .oxygen-grid{grid-template-columns:1fr}
+      .big{font-size:1.7rem}
+      .brand{align-items:flex-start}
+      .logo-box img{height:44px}
+    }
+    @media (max-width:480px){
+      .kpis{grid-template-columns:1fr}
+      h1{font-size:1.25rem}
+      .lang-switch{width:100%}
+      .lang-btn{flex:1}
+      .logo-box img{height:38px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="topbar">
+          <div class="brand">
+            <div class="logo-box"><img alt="Tarma Engineering logo" src="data:image/jpeg;base64,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" /></div>
+            <div>
+              <h1 id="title">Pipe Purge Calculator</h1>
+              <p class="sub" id="subtitle">Simple mobile calculator. Enter internal diameter and purge length in mm. Recommended flow is auto-filled from diameter and gas choice, and you can change it manually.</p>
+            </div>
+          </div>
+          <div class="lang-switch" aria-label="Language selector">
+            <button class="lang-btn active" data-lang="en" type="button">English</button>
+            <button class="lang-btn" data-lang="ru" type="button">Русский</button>
+            <button class="lang-btn" data-lang="pl" type="button">Polski</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="diameter" id="diameterLabel">Internal pipe diameter</label>
+          <input id="diameter" type="number" min="0" step="any" value="52.5" />
+          <div class="hint" id="diameterHint">Enter diameter in mm</div>
+        </div>
+
+        <div class="field">
+          <label for="length" id="lengthLabel">Pipe length to purge</label>
+          <input id="length" type="number" min="0" step="any" value="500" />
+          <div class="hint" id="lengthHint">Enter length in mm</div>
+        </div>
+
+        <div class="field">
+          <label for="gas" id="gasLabel">Purge gas</label>
+          <select id="gas">
+            <option value="argon" selected>Argon</option>
+            <option value="forming">Forming gas 90/10</option>
+          </select>
+          <div class="hint" id="gasHint">Gas choice changes the recommended flow and purge factor.</div>
+        </div>
+
+        <div class="field">
+          <label for="flow" id="flowLabel">Flow rate</label>
+          <input id="flow" type="number" min="0" step="any" value="10" />
+          <div class="hint" id="flowHint">Auto-filled from diameter and gas. You can change it manually in the same field.</div>
+        </div>
+      </div>
+
+      <div class="result">
+        <div id="resultLabel">Recommended purge time</div>
+        <div class="big" id="purgeTime">--</div>
+        <div id="readyText">Fill in the values to calculate.</div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <small id="volumeLabel">Pipe volume</small>
+            <strong id="volumeLiters">--</strong>
+          </div>
+          <div class="kpi">
+            <small id="flowAutoLabel">Recommended flow</small>
+            <strong id="flowAuto">--</strong>
+          </div>
+          <div class="kpi">
+            <small id="gasNeededLabel">Total gas needed</small>
+            <strong id="gasNeeded">--</strong>
+          </div>
+          <div class="kpi">
+            <small id="factorOutLabel">Purge factor</small>
+            <strong id="factorOut">--</strong>
+          </div>
+        </div>
+
+        <div class="pillrow">
+          <div class="pill" id="summary1">—</div>
+          <div class="pill" id="summary2">—</div>
+          <div class="pill" id="summary3">—</div>
+        </div>
+      </div>
+
+      <div class="oxygen-box">
+        <div class="oxygen-title" id="oxygenTitle">O₂ requirement for hygienic stainless welding</div>
+        <div class="oxygen-grid">
+          <div class="oxygen-item ok">
+            <div class="oxygen-badge" id="oxygenOkBadge">OK TO WELD</div>
+            <div class="oxygen-value" id="oxygenOkValue">&lt; 20 ppm</div>
+            <div class="oxygen-note" id="oxygenOkNote">Preferred start point for stainless steel 304L / 316L in food industry service.</div>
+          </div>
+          <div class="oxygen-item max">
+            <div class="oxygen-badge" id="oxygenMaxBadge">MAX LIMIT</div>
+            <div class="oxygen-value" id="oxygenMaxValue">50 ppm</div>
+            <div class="oxygen-note" id="oxygenMaxNote">Do not start welding above this limit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer" id="footerText">
+        Practical workshop defaults are used for the suggested flow, but the flow field can be changed manually. Pipe volume = π × (diameter² / 4) × length. Purge time = (pipe volume × purge factor) ÷ recommended flow. Always follow your WPS, internal procedure, oxygen limits, and site rules.
+      </div>
+    </div>
+  </div>
+
+<script>
+const texts = {
+  en: {
+    title: "Pipe Purge Calculator",
+    subtitle: "Simple mobile calculator. Enter internal diameter and purge length in mm. Recommended flow is auto-filled from diameter and gas choice, and you can change it manually.",
+    diameterLabel: "Internal pipe diameter",
+    diameterHint: "Enter diameter in mm",
+    lengthLabel: "Pipe length to purge",
+    lengthHint: "Enter length in mm",
+    gasLabel: "Purge gas",
+    gasHint: "Gas choice changes the recommended flow and purge factor.",
+    flowLabel: "Flow rate",
+    flowHint: "Auto-filled from diameter and gas. You can change it manually in the same field.",
+    resultLabel: "Recommended purge time",
+    resultReady: (gas, flow) => `${gas} selected. Recommended flow: ${flow} L/min.`,
+    resultError: "Enter positive values to calculate.",
+    volumeLabel: "Pipe volume",
+    flowAutoLabel: "Recommended flow",
+    gasNeededLabel: "Total gas needed",
+    factorOutLabel: "Purge factor",
+    oxygenTitle: "O₂ requirement for hygienic stainless welding",
+    oxygenOkBadge: "OK TO WELD",
+    oxygenOkValue: "< 20 ppm",
+    oxygenOkNote: "Preferred start point for stainless steel 304L / 316L in food industry service.",
+    oxygenMaxBadge: "MAX LIMIT",
+    oxygenMaxValue: "50 ppm",
+    oxygenMaxNote: "Do not start welding above this limit.",
+    footerText: "Practical workshop defaults are used for the suggested flow, but the flow field can be changed manually. Pipe volume = π × (diameter² / 4) × length. Purge time = (pipe volume × purge factor) ÷ recommended flow. Always follow your WPS, internal procedure, oxygen limits, and site rules.",
+    summary1: d => `ID ${d} mm`,
+    summary2: l => `Length ${l} mm`,
+    summary3: g => g,
+    bad1: "Check values",
+    bad2: "Diameter must be > 0",
+    bad3: "Length must be > 0",
+    liters: "L",
+    gasNames: {argon: "Argon", forming: "Forming gas 90/10"},
+    langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+  },
+  ru: {
+    title: "Калькулятор продувки трубы",
+    subtitle: "Простой мобильный калькулятор. Введите внутренний диаметр и длину продувки в мм. Рекомендуемый расход заполняется автоматически по диаметру и газу, и его можно изменить вручную.",
+    diameterLabel: "Внутренний диаметр трубы",
+    diameterHint: "Введите диаметр в мм",
+    lengthLabel: "Длина трубы для продувки",
+    lengthHint: "Введите длину в мм",
+    gasLabel: "Газ для продувки",
+    gasHint: "Выбор газа меняет рекомендуемый расход и коэффициент продувки.",
+    flowLabel: "Расход газа",
+    flowHint: "Поле заполняется автоматически по диаметру и газу. При необходимости вы можете изменить его вручную.",
+    resultLabel: "Рекомендуемое время продувки",
+    resultReady: (gas, flow) => `${gas} выбран. Рекомендуемый расход: ${flow} л/мин.`,
+    resultError: "Введите положительные значения.",
+    volumeLabel: "Объем трубы",
+    flowAutoLabel: "Рекомендуемый расход",
+    gasNeededLabel: "Общий расход газа",
+    factorOutLabel: "Коэффициент продувки",
+    oxygenTitle: "Требование по O₂ для гигиенической сварки нержавеющей стали",
+    oxygenOkBadge: "МОЖНО СВАРИВАТЬ",
+    oxygenOkValue: "< 20 ppm",
+    oxygenOkNote: "Предпочтительный уровень начала сварки для нержавеющей стали 304L / 316L в пищевой промышленности.",
+    oxygenMaxBadge: "МАКС. ПРЕДЕЛ",
+    oxygenMaxValue: "50 ppm",
+    oxygenMaxNote: "Не начинайте сварку выше этого предела.",
+    footerText: "Для рекомендуемого расхода используются практические цеховые значения, но это поле можно изменить вручную. Объем трубы = π × (диаметр² / 4) × длина. Время продувки = (объем трубы × коэффициент продувки) ÷ рекомендуемый расход. Всегда следуйте WPS, внутренней процедуре, лимитам кислорода и правилам площадки.",
+    summary1: d => `ID ${d} мм`,
+    summary2: l => `Длина ${l} мм`,
+    summary3: g => g,
+    bad1: "Проверьте значения",
+    bad2: "Диаметр должен быть > 0",
+    bad3: "Длина должна быть > 0",
+    liters: "л",
+    gasNames: {argon: "Аргон", forming: "Форминг-газ 90/10"},
+    langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+  },
+  pl: {
+    title: "Kalkulator przedmuchu rury",
+    subtitle: "Prosty kalkulator mobilny. Wpisz średnicę wewnętrzną i długość przedmuchu w mm. Zalecany przepływ jest uzupełniany automatycznie według średnicy i gazu, ale możesz go też zmienić ręcznie.",
+    diameterLabel: "Średnica wewnętrzna rury",
+    diameterHint: "Wpisz średnicę w mm",
+    lengthLabel: "Długość rury do przedmuchu",
+    lengthHint: "Wpisz długość w mm",
+    gasLabel: "Gaz do przedmuchu",
+    gasHint: "Wybór gazu zmienia zalecany przepływ i współczynnik przedmuchu.",
+    flowLabel: "Przepływ",
+    flowHint: "Pole uzupełnia się automatycznie według średnicy i gazu. Możesz je też zmienić ręcznie.",
+    resultLabel: "Zalecany czas przedmuchu",
+    resultReady: (gas, flow) => `${gas} wybrany. Zalecany przepływ: ${flow} l/min.`,
+    resultError: "Wpisz wartości dodatnie.",
+    volumeLabel: "Objętość rury",
+    flowAutoLabel: "Zalecany przepływ",
+    gasNeededLabel: "Łączna ilość gazu",
+    factorOutLabel: "Współczynnik przedmuchu",
+    oxygenTitle: "Wymaganie O₂ dla higienicznego spawania stali nierdzewnej",
+    oxygenOkBadge: "MOŻNA SPAWAĆ",
+    oxygenOkValue: "< 20 ppm",
+    oxygenOkNote: "Preferowany poziom rozpoczęcia spawania dla stali nierdzewnej 304L / 316L w przemyśle spożywczym.",
+    oxygenMaxBadge: "MAKS. LIMIT",
+    oxygenMaxValue: "50 ppm",
+    oxygenMaxNote: "Nie zaczynaj spawania powyżej tej wartości.",
+    footerText: "Do sugerowanego przepływu użyto praktycznych ustawień warsztatowych, ale to pole można zmienić ręcznie. Objętość rury = π × (średnica² / 4) × długość. Czas przedmuchu = (objętość rury × współczynnik przedmuchu) ÷ zalecany przepływ. Zawsze stosuj się do WPS, procedur wewnętrznych, limitów tlenu i zasad zakładu.",
+    summary1: d => `ID ${d} mm`,
+    summary2: l => `Długość ${l} mm`,
+    summary3: g => g,
+    bad1: "Sprawdź wartości",
+    bad2: "Średnica musi być > 0",
+    bad3: "Długość musi być > 0",
+    liters: "L",
+    gasNames: {argon: "Argon", forming: "Gaz formujący 90/10"},
+    langButtons: {en:"English", ru:"Русский", pl:"Polski"}
+  }
+};
+
+let currentLang = 'en';
+let manualFlowOverride = false;
+let lastRecommendedFlow = null;
+
+['diameter','length','gas'].forEach(id => document.getElementById(id).addEventListener('input', onAutoInputsChanged));
+document.getElementById('flow').addEventListener('input', () => {
+  const flowVal = document.getElementById('flow').value.trim();
+  manualFlowOverride = flowVal !== '' && Number(flowVal) !== lastRecommendedFlow;
+  calc();
+});
+document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
+
+function fmt(value, decimals=2){
+  if (!isFinite(value)) return "--";
+  return Number(value).toFixed(decimals);
+}
+function formatMinutes(totalMinutes){
+  if (!isFinite(totalMinutes) || totalMinutes <= 0) return "--";
+  const totalSeconds = Math.round(totalMinutes * 60);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  if (mins === 0) return `${secs} sec`;
+  return `${mins} min ${secs.toString().padStart(2,'0')} sec`;
+}
+function getGasName(gasKey){
+  return texts[currentLang].gasNames[gasKey];
+}
+
+// Practical workshop defaults for auto flow suggestion
+function getSettings(diameterMm, gasKey){
+  let flow;
+  if (gasKey === 'argon') {
+    if (diameterMm <= 25) flow = 4;
+    else if (diameterMm <= 50) flow = 6;
+    else if (diameterMm <= 100) flow = 10;
+    else if (diameterMm <= 150) flow = 14;
+    else if (diameterMm <= 250) flow = 18;
+    else flow = 22;
+    return { flow, factor: 5 };
+  }
+  if (diameterMm <= 25) flow = 3.5;
+  else if (diameterMm <= 50) flow = 5;
+  else if (diameterMm <= 100) flow = 8;
+  else if (diameterMm <= 150) flow = 12;
+  else if (diameterMm <= 250) flow = 16;
+  else flow = 20;
+  return { flow, factor: 4 };
+}
+
+function setRecommendedFlow(force=false){
+  const d = parseFloat(document.getElementById('diameter').value);
+  const gasKey = document.getElementById('gas').value;
+  if (!(d > 0)) return;
+  const settings = getSettings(d, gasKey);
+  lastRecommendedFlow = settings.flow;
+  const flowInput = document.getElementById('flow');
+  const current = parseFloat(flowInput.value);
+  if (force || !manualFlowOverride || !(current > 0)) {
+    flowInput.value = fmt(settings.flow,1);
+    manualFlowOverride = false;
+  }
+}
+
+function onAutoInputsChanged(){
+  setRecommendedFlow();
+  calc();
+}
+
+function applyLanguage(){
+  const t = texts[currentLang];
+  document.documentElement.lang = currentLang;
+  document.getElementById('title').textContent = t.title;
+  document.getElementById('subtitle').textContent = t.subtitle;
+  document.getElementById('diameterLabel').textContent = t.diameterLabel;
+  document.getElementById('diameterHint').textContent = t.diameterHint;
+  document.getElementById('lengthLabel').textContent = t.lengthLabel;
+  document.getElementById('lengthHint').textContent = t.lengthHint;
+  document.getElementById('gasLabel').textContent = t.gasLabel;
+  document.getElementById('gasHint').textContent = t.gasHint;
+  document.getElementById('flowLabel').textContent = t.flowLabel;
+  document.getElementById('flowHint').textContent = t.flowHint;
+  document.getElementById('resultLabel').textContent = t.resultLabel;
+  document.getElementById('volumeLabel').textContent = t.volumeLabel;
+  document.getElementById('flowAutoLabel').textContent = t.flowAutoLabel;
+  document.getElementById('gasNeededLabel').textContent = t.gasNeededLabel;
+  document.getElementById('factorOutLabel').textContent = t.factorOutLabel;
+  document.getElementById('oxygenTitle').textContent = t.oxygenTitle;
+  document.getElementById('oxygenOkBadge').textContent = t.oxygenOkBadge;
+  document.getElementById('oxygenOkValue').innerHTML = t.oxygenOkValue.replace('<', '&lt;');
+  document.getElementById('oxygenOkNote').textContent = t.oxygenOkNote;
+  document.getElementById('oxygenMaxBadge').textContent = t.oxygenMaxBadge;
+  document.getElementById('oxygenMaxValue').textContent = t.oxygenMaxValue;
+  document.getElementById('oxygenMaxNote').textContent = t.oxygenMaxNote;
+  document.getElementById('footerText').textContent = t.footerText;
+
+  const gas = document.getElementById('gas');
+  const val = gas.value;
+  gas.options[0].textContent = t.gasNames.argon;
+  gas.options[1].textContent = t.gasNames.forming;
+  gas.value = val;
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    btn.textContent = t.langButtons[btn.dataset.lang];
+  });
+}
+
+function setLanguage(lang){
+  currentLang = lang;
+  applyLanguage();
+  calc();
+}
+
+function calc(){
+  const t = texts[currentLang];
+  const d = parseFloat(document.getElementById('diameter').value);
+  const l = parseFloat(document.getElementById('length').value);
+  const gasKey = document.getElementById('gas').value;
+  const flowInput = parseFloat(document.getElementById('flow').value);
+
+  if(!(d > 0 && l > 0 && flowInput > 0)){
+    document.getElementById('purgeTime').textContent = "--";
+    document.getElementById('readyText').textContent = t.resultError;
+    document.getElementById('volumeLiters').textContent = "--";
+    document.getElementById('flowAuto').textContent = "--";
+    document.getElementById('gasNeeded').textContent = "--";
+    document.getElementById('factorOut').textContent = "--";
+    document.getElementById('summary1').textContent = t.bad1;
+    document.getElementById('summary2').textContent = t.bad2;
+    document.getElementById('summary3').textContent = t.bad3;
+    return;
+  }
+
+  const settings = getSettings(d, gasKey);
+  lastRecommendedFlow = settings.flow;
+  const actualFlow = flowInput;
+  const radiusMm = d / 2;
+  const volumeMm3 = Math.PI * radiusMm * radiusMm * l;
+  const volumeLiters = volumeMm3 / 1000000;
+  const gasNeeded = volumeLiters * settings.factor;
+  const purgeMinutes = gasNeeded / actualFlow;
+  const gasName = getGasName(gasKey);
+
+  document.getElementById('purgeTime').textContent = formatMinutes(purgeMinutes);
+  document.getElementById('readyText').textContent = t.resultReady(gasName, fmt(settings.flow,1));
+  document.getElementById('volumeLiters').textContent = `${fmt(volumeLiters,2)} ${t.liters}`;
+  document.getElementById('flowAuto').textContent = `${fmt(actualFlow,1)} L/min`;
+  document.getElementById('gasNeeded').textContent = `${fmt(gasNeeded,2)} ${t.liters}`;
+  document.getElementById('factorOut').textContent = `${fmt(settings.factor,0)} x`;
+  document.getElementById('summary1').textContent = t.summary1(fmt(d,1));
+  document.getElementById('summary2').textContent = t.summary2(fmt(l,1));
+  document.getElementById('summary3').textContent = `${gasName} · ${fmt(settings.flow,1)} rec`;
+}
+
+applyLanguage();
+setRecommendedFlow(true);
+calc();
+</script>
+</body>
+</html>
