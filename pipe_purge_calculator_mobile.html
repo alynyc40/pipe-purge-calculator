@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Purge Calculator</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #f5f5f5;
+}
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+}
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 16px;
+}
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+.result {
+    margin-top: 15px;
+    padding: 10px;
+    background: #e9f7ef;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 18px;
+}
+.oxygen {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff3cd;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>Purge Calculator</h2>
+
+<input id="diameter" placeholder="Diameter (mm)">
+<input id="length" placeholder="Length (mm)">
+<select id="gas">
+<option value="argon">Argon</option>
+<option value="forming">Forming 90/10</option>
+</select>
+
+<input id="flow" placeholder="Flow (L/min)">
+
+<button onclick="calculate()">Calculate</button>
+
+<div class="result" id="result"></div>
+
+<div class="oxygen">
+<b>O₂ Requirement</b><br>
+OK: <20 ppm<br>
+Max: 50 ppm
+</div>
+
+</div>
+
+<script>
+function suggestFlow(d){
+    if(d <= 50) return 8;
+    if(d <= 150) return 12;
+    return 18;
+}
+
+function calculate(){
+    let d = parseFloat(document.getElementById("diameter").value);
+    let l = parseFloat(document.getElementById("length").value);
+    let flowInput = document.getElementById("flow");
+    let flow = parseFloat(flowInput.value);
+
+    if(!flow){
+        flow = suggestFlow(d);
+        flowInput.value = flow;
+    }
+
+    let volume = Math.PI * Math.pow(d/1000,2)/4 * (l/1000) * 1000;
+    let purgeFactor = 5;
+
+    let time = (volume * purgeFactor) / flow;
+
+    document.getElementById("result").innerHTML =
+        "Time: " + Math.round(time) + " sec";
+}
+</script>
+
+</body>
+</html>
